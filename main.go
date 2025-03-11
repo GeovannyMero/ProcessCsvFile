@@ -2,14 +2,13 @@ package main
 
 import (
 	"context"
-	"encoding/csv"
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
 
-	"example.com/csv/src/models"
+	"example.com/csv/src/core"
+	"example.com/csv/src/database"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -43,7 +42,7 @@ import (
 //	}
 
 func main() {
-	people := ReadCsv()
+	people := core.ReadCsv()
 	println("Cantidad de registros: ", len(people))
 
 	var interfacePeople []interface{}
@@ -55,7 +54,7 @@ func main() {
 	// ConnectToDb(people[50])
 	//ConnectToDb(interfacePeople)
 
-	client, ctx, err := Connect()
+	client, ctx, err := database.Connect()
 
 	if err != nil {
 		log.Fatal("ERROR: ", err)
@@ -182,99 +181,99 @@ func ConnectToDb(person []interface{}) {
 	fmt.Println("📌 Documento insertado con ID:", len(result_insert.InsertedIDs))
 }
 
-func ReadCsv() []models.Person {
-	//abre el documento
-	file, err := os.Open("C:\\Users\\gmero\\Documents\\GO\\04-csv\\resources\\SRI_RUC_Azuay(1).csv")
+// func ReadCsv() []models.Person {
+// 	//abre el documento
+// 	file, err := os.Open("C:\\Users\\gmero\\Documents\\GO\\04-csv\\resources\\SRI_RUC_Azuay(1).csv")
 
-	if err != nil {
-		fmt.Println("Error al abrir archivo: ", err)
-		return nil
-	}
+// 	if err != nil {
+// 		fmt.Println("Error al abrir archivo: ", err)
+// 		return nil
+// 	}
 
-	defer file.Close()
+// 	defer file.Close()
 
-	reader := csv.NewReader(file)
-	reader.Comma = '|'
+// 	reader := csv.NewReader(file)
+// 	reader.Comma = '|'
 
-	//leer un lector
-	records, err := reader.ReadAll()
+// 	//leer un lector
+// 	records, err := reader.ReadAll()
 
-	if err != nil {
-		fmt.Println("ERROR al leer archivo CSV:", err)
-		return nil
-	}
+// 	if err != nil {
+// 		fmt.Println("ERROR al leer archivo CSV:", err)
+// 		return nil
+// 	}
 
-	//crear una variable de una array de tipo person
-	var people []models.Person
+// 	//crear una variable de una array de tipo person
+// 	var people []models.Person
 
-	for i, row := range records {
-		if i == 0 {
-			continue
-		}
+// 	for i, row := range records {
+// 		if i == 0 {
+// 			continue
+// 		}
 
-		numero_est, _ := strconv.ParseInt(row[11], 10, 64)
+// 		numero_est, _ := strconv.ParseInt(row[11], 10, 64)
 
-		person := models.Person{
-			Ruc:                       row[0],
-			RazonSocial:               row[1],
-			CodigoJuridiccion:         row[2],
-			EstadoContribuyente:       row[3],
-			ClaseContribuyente:        row[4],
-			FechaInicioActividades:    row[5],
-			FechaActualización:        row[6],
-			FechaSuspencionDefinitiva: row[7],
-			FechaReinicioActividades:  row[8],
-			Obligado:                  row[9],
-			TipoContribuyente:         row[10],
-			NumeroEstablecimiento:     int(numero_est),
-			NombreFantasiaComercial:   row[12],
-			EstadoEstablecimiento:     row[13],
-			DescripcionProvinciaEst:   row[14],
-			DescripcionCantonEst:      row[15],
-			DescripcionParroquiaEst:   row[16],
-			CodigoCIIU:                row[17],
-			ActividadEconomica:        row[18],
-			AgenteRetencion:           row[19],
-			Especial:                  row[20],
-		}
+// 		person := models.Person{
+// 			Ruc:                       row[0],
+// 			RazonSocial:               row[1],
+// 			CodigoJuridiccion:         row[2],
+// 			EstadoContribuyente:       row[3],
+// 			ClaseContribuyente:        row[4],
+// 			FechaInicioActividades:    row[5],
+// 			FechaActualización:        row[6],
+// 			FechaSuspencionDefinitiva: row[7],
+// 			FechaReinicioActividades:  row[8],
+// 			Obligado:                  row[9],
+// 			TipoContribuyente:         row[10],
+// 			NumeroEstablecimiento:     int(numero_est),
+// 			NombreFantasiaComercial:   row[12],
+// 			EstadoEstablecimiento:     row[13],
+// 			DescripcionProvinciaEst:   row[14],
+// 			DescripcionCantonEst:      row[15],
+// 			DescripcionParroquiaEst:   row[16],
+// 			CodigoCIIU:                row[17],
+// 			ActividadEconomica:        row[18],
+// 			AgenteRetencion:           row[19],
+// 			Especial:                  row[20],
+// 		}
 
-		people = append(people, person)
-	}
+// 		people = append(people, person)
+// 	}
 
-	return people
+// 	return people
 
-}
+// }
 
-func Connect() (*mongo.Client, context.Context, error) {
-	err := godotenv.Load()
+// func Connect() (*mongo.Client, context.Context, error) {
+// 	err := godotenv.Load()
 
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	MONGO_URI := os.Getenv("MONGO_URI")
+// 	MONGO_URI := os.Getenv("MONGO_URI")
 
-	// Crear un contexto con timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+// 	// Crear un contexto con timeout
+// 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 
-	// Cerrar el contexto si hay un error o al finalizar
-	defer cancel()
+// 	// Cerrar el contexto si hay un error o al finalizar
+// 	defer cancel()
 
-	// Configurar opciones del cliente
-	clientOptions := options.Client().ApplyURI(MONGO_URI)
+// 	// Configurar opciones del cliente
+// 	clientOptions := options.Client().ApplyURI(MONGO_URI)
 
-	// Conectar con MongoDB
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		return nil, nil, err
-	}
+// 	// Conectar con MongoDB
+// 	client, err := mongo.Connect(ctx, clientOptions)
+// 	if err != nil {
+// 		return nil, nil, err
+// 	}
 
-	// Verificar la conexión con un ping
-	err = client.Ping(context.Background(), nil)
-	if err != nil {
-		return nil, nil, err
-	}
+// 	// Verificar la conexión con un ping
+// 	err = client.Ping(context.Background(), nil)
+// 	if err != nil {
+// 		return nil, nil, err
+// 	}
 
-	fmt.Println("✅ Conexión exitosa a MongoDB")
-	return client, ctx, nil
-}
+// 	fmt.Println("✅ Conexión exitosa a MongoDB")
+// 	return client, ctx, nil
+// }
